@@ -1,5 +1,5 @@
 ---
-title: "Ejercicios r4ds"
+title: "Parte III"
 author: "ronny hdez-mora"
 date: "5/25/2019"
 output: pdf_document
@@ -12,8 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 ```
 
-# Parte III
-## Capítulo 15
+# Capítulo 15
 ## Funciones
 
 ##2 Hacer función propia para la varianza
@@ -42,7 +41,6 @@ both_na <- function(x, y) {
 both_na(secuencia_a, secuencia_b)
 
 ```
-
 
 ##6 ¿Qué hacen las siguientes funciones?
 
@@ -154,12 +152,69 @@ for (i in seq_along(df)) {
 
 ## Ejercicios
 
-### 1 Generar loops para 
+ - 1 Generar loops para: 
   
-#### Cada columna en mtcars
+### 1.a Obtener media de cada columna en mtcars
+```{r}
+# Estructura para almacenar valores
+medias <- vector("double", ncol(mtcars))
 
-#### Determinar el tipo de cada columna en `fligths13::fligths`
+# Loop
+for (i in seq_along(mtcars)) {
+  medias[[i]] <- mean(mtcars[[i]])
+}
 
-#### Computar el número de valores únicos en cada columna de iris
+# Mostrar resultados
+print(medias)
+```
 
-#### Generar 
+### 1.b Determinar el tipo de cada columna en `fligths13::fligths`
+```{r}
+# Crear objeto con datos
+vuelos <- nycflights13::flights
+
+# Estructura para almancenar datos
+# tipo_columnas <- vector("character", ncol(vuelos))
+
+# Hay que hacer estructura de lista porque clase de columna
+# time_hour tiene dos: "POSIXct" "POSIXt" y eso causa problemas
+# de espacio en la estructura de vector
+tipo_columnas <- list()
+
+# Loop
+for (i in seq_along(vuelos)) {
+  tipo_columnas[[i]] <- class(vuelos[[i]])
+}
+
+# Mostrar resultados
+tipo_columnas
+```
+
+### 1.c Computar el número de valores únicos en cada columna de iris
+```{r}
+# Estructura para almacenar datos
+valores_unicos <- vector("double", ncol(iris))
+
+# Loop
+for (i in seq_along(iris)) {
+  valores_unicos[[i]] <- length(unique(iris[[i]]))
+}
+
+# Mostrar resultados
+valores_unicos
+```
+
+ - 4. Es común observar loops que no pre-alocan el output y en lugar, 
+ incrementan el tamaño del vector en cada paso. ¿Cómo esto afecta el
+ rendimiento? Diseñe y ejecute un experimento
+ 
+```{r}
+output <- vector("integer", 0)
+
+for (i in seq_along(x)) {
+  output <- c(output, lengths(x[[i]]))
+}
+
+output
+```
+ 
