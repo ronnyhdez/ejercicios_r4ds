@@ -10,6 +10,8 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
+library(purrr)
+library(ggplot2)
 ```
 
 # Capítulo 15
@@ -327,7 +329,109 @@ resumen_columnas(datos, median)
 resumen_columnas(datos, sd)
 ```
 
+## Funciones map()
 
+Con estas funciones tenemos la posibilidad de "saltarnos" el crear un loop y 
+usar una función directamente que hace énfasis en la operación que se genera.
+Hay una función por cada tipo de output
+
+ - `map()` crea una lista
+ - `map_lgl()` crea un vector logico
+ - `map_int()` crea un vector entero
+ - `map_dbl()` crea un vector doble
+ - `map_chr()` crear un vetor caracteres
+ 
+En el caso del ejemplo anterior, podríamos sustituir el loop con:
+```{r}
+map_dbl(datos, mean)
+```
+
+```{r}
+map_dbl(datos, median)
+```
+
+```{r}
+map_dbl(datos, sd)
+```
+
+### Atajos
+
+Con **purrr** y sus funciones `map_()` tenemos:
+
+ - Un segundo argumento, `.f` que es la función a aplicar puede ser una fórmula,
+ un vector de caracteres o un vector de enteros.
+ -  map_ usa `...` para pasar argumentos adicionales a `.f` cada vez que es llamado
+ - Las funciones de map preservan los nombres.
+ 
+En este ejemplo podemos dividir los datos de **mtcars** en tres piezas (por cilindro) y ajustar el mismo modelo linear para cada pieza:
+```{r}
+models <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(
+    function(datos) {
+      lm(mpg ~ wt, data = datos)
+    }
+  )
+
+models
+```
+
+En el caso de crear una función anónima (que se puede unir con pipes) se 
+puede crear con purrr un atajo - un solo lado de la fórmula:
+```{r}
+models <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(~lm(mpg ~ wt, data = .))
+
+models
+```
+
+ - Notar que se usa `.` para hacer referencia al elemento de lista.
+ 
+Si se est'a trajando con muchos modelos se puede extraer estadísticas de 
+resumen como el R2.
+```{r}
+models %>% 
+  map(summary) %>% 
+  map_dbl(~ .$r.squared)
+```
+
+Se puede realizar también usando el nombre como _string_
+```{r}
+models %>% 
+  map(summary) %>% 
+  map_dbl("r.squared")
+```
+
+## Ejercicios 
+
+- 1 Generar codido con funciones map para: 
+  
+### 1.a Obtener media de cada columna en mtcars
+```{r}
+map_dbl(mtcars, mean)
+```
+
+### 1.b Determinar el tipo de cada columna en nycflights13::flights
+```{r}
+# Como lista por razones de ultima columna
+map(nycflights13::flights, class)
+
+# Como chr si pedimos el typeof
+map_chr(nycflights13::flights, typeof)
+```
+
+### 1.c Obtener valores únicos para cada columna de iris
+```{r}
+# No hay manera directa de pedir cantidad de unicos, por ende se pasa 
+# como funcion
+map_int(iris, ~length(unique(.)))
+```
+
+### 1.d Genarar 10 valores aleatorios para cada -10, 0, 10, 100
+```{r}
+map(c(-10, 0, 10, 100), ~rnorm(10, mean = .))
+```
 
 
 
