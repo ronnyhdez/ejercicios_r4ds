@@ -9,7 +9,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(purr)
+library(purrr)
 library(dplyr)
 library(ggplot2)
 library(modelr)
@@ -55,6 +55,115 @@ model1(c(7, 1.5), sim1)
 library(nycflights13)
 library(lubridate)
 ```
+
+## ¿Porqué son los diamantes de baja calidad caros?
+
+```{r}
+ggplot(diamonds, aes(cut, price)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(diamonds, aes(color, price)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(diamonds, aes(clarity, price)) + 
+  geom_boxplot()
+```
+
+Lo anterior muestra que características malas parecen tener precios más altos.
+Sin embargo hay uyna característica que está relacionada con el precio y es
+el peso (carat)
+```{r}
+ggplot(diamonds, aes(carat, price)) +
+  geom_hex(bins = 50)
+```
+
+Vamos a limpiar los datos para hacerlos un poco más manipulables:
+
+ - Enfocarse en aquellos menores a 2.5 de carat
+ - Hacer transformación logaritmica de carat y price
+ 
+```{r}
+diamonds2 <- diamonds %>% 
+  filter(carat <= 2.5) %>% 
+  mutate(log_price = log2(price),
+         log_carat = log2(carat))
+```
+
+Con esos cambios la relación será más fácil de verla entre carat y price
+```{r}
+ggplot(diamonds2, aes(x = log_carat, y = log_price)) +
+         geom_hex(bins = 50)
+```
+
+```{r}
+mod_diamond <- lm(log_price ~ log_carat, data = diamonds2)
+```
+
+Vamos a sobreponer las predicciones del modelo en el gráfico con los valores
+iniciales
+```{r}
+grid <- diamonds2 %>% 
+  data_grid(carat = seq_range(carat, 20)) %>%
+  mutate(log_carat = log2(carat)) %>% 
+  add_predictions(mod_diamond, "log_price") %>% 
+  mutate(price = 2 ^ log_price)
+              
+ggplot(diamonds2, aes(carat, price)) + 
+  geom_hex(bins = 50) +
+  geom_line(data = grid, color = "red", size = 1)
+```
+
+Si creemos en nuestro modelo, lo qu vemos es que los diamantes grandes son mucho
+más baratos de lo esperado.
+
+Vamos a revisar los residuales para corroborar que se ha elimiado el patrón
+lineal
+```{r}
+diamonds2 <- diamonds2 %>% 
+  add_residuals(mod_diamond, "lresid")
+
+ggplot(diamonds2, aes(log_carat, lresid)) + 
+  geom_hex(bins = 50)
+```
+
+Ahora podemos hacer nuestros gráficos iniciales usando los residuales en lugar 
+del precio
+```{r}
+ggplot(diamonds2, aes(cut, lresid)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(diamonds2, aes(color, lresid)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(diamonds2, aes(clarity, lresid)) +
+  geom_boxplot()
+```
+
+Ahora vemos que a mayor calidad del diamante, mayor el precio.
+
+## Un modelo más complicado
+
+Para hacer más explícito lo encontrado se puede incluir  color, cut y carat en 
+el modelo y dejar claro el impacto que tienen esas variables categóricas
+```{r}
+mod_diamond2 <- lm(
+  log_price ~ log_carat + color + cut + clarity,
+  data = diamonds2
+)
+```
+
+EL modelo tiene ahora 4 predictores, por lo que es más difícil visualizar. Al
+ser independientes se pueden graficar por separado.
+
+
 
 
 
