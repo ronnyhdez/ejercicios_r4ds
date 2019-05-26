@@ -132,8 +132,9 @@ comas <- function(...) {
 comas(letters[1:5])
 ```
 
-# Capítulo 17
+# Capítulo 17: Iteraciones con purr
 
+## Introducción
 Uno de los primeros ejemplos de loops:
 ```{r}
 df <- tibble(
@@ -211,6 +212,8 @@ valores_unicos
 ```{r}
 output <- vector("integer", 0)
 
+x <- iris
+
 for (i in seq_along(x)) {
   output <- c(output, lengths(x[[i]]))
 }
@@ -218,3 +221,114 @@ for (i in seq_along(x)) {
 output
 ```
  
+El experimento con tiempo:
+
+```{r}
+# Output sin asginar
+x <- vuelos
+
+output <- vector("integer", 0)
+
+system.time(for (i in seq_along(x)) {
+  output <- c(output, lengths(x[[i]]))
+})
+
+# Output asignado
+x <- vuelos
+
+output <- vector("integer", ncol(x))
+
+system.time(for (i in seq_along(x)) {
+  output <- c(output, lengths(x[[i]]))
+})
+```
+
+Midiendo el tiempo vemos que tenemos una diferencia de `0.265 - 0.153` con
+respecto a una estructura con espacios creados a una sin haber sido asignada.
+
+## Variaciones de for loops:
+
+ - Modificar un objeto existente.
+ - Looping sobre nombres o valores.
+ - Manejar outputs de tamaño desconocido.
+ - Manejar secuencias de tamaño desconocido.
+ 
+### Ejercicios
+
+ - 1. Imagine tiene un directorio lleno de archivos .csv que quiere leer
+ Escriba el loop necesario para cargarlos en un solo dataframe.
+ - 2. ¿Qué pasa si usa `for (nm in names(x))` y x no tiene nombres? 
+ ¿Qué pasa si sólo algunos de los elementos tienen nombre? ¿
+ 
+ 
+ 
+## For loops vs Functionals
+
+ - En R loops pueden envolver otros loops
+
+La ventaja se ve en el siguiente ejemplo: Tenemos un conjunto de datos en el 
+cual queremos obtener la media de cada columna:
+```{r}
+# Crear tibble ejemplo
+datos <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+# Crear loop para tener media de cada columna
+output <- vector("double", ncol(datos))
+
+for (i in seq_along(datos)) {
+  output[[i]] <- mean(datos[[i]])
+}
+
+output
+```
+
+Pero luego nos damos cuenta que sería útil obtner la mediana y la desviación
+estándar. Por lo que copiamos y pegamos el código cambiando la función mean por
+median y sd respectivamente:
+```{r}
+for (i in seq_along(datos)) {
+  output[[i]] <- median(datos[[i]])
+}
+
+output
+
+for (i in seq_along(datos)) {
+  output[[i]] <- sd(datos[[i]])
+}
+
+output
+```
+
+Hasta este punto hemos violado la regla: hemos copiado y pegado más de dos veces
+el mismo código. Por ende debemos de tener una manera de generalizar esto dentro
+de una función. La única diferencia que encontramos es el nombre de la función, 
+todo lo demás se encuentra igual. 
+
+En una función podemos agregar un argumento que indique la función:
+```{r}
+resumen_columnas <- function(x, fun) {
+  out <- vector("double", ncol(x))
+  for (i in seq_along(x)) {
+    out[[i]] <- fun(x[[i]])
+  }
+  return(out)
+}
+```
+
+Con la función podríamos jugar así:
+```{r}
+resumen_columnas(datos, mean)
+resumen_columnas(datos, median)
+resumen_columnas(datos, sd)
+```
+
+
+
+
+
+
