@@ -3,28 +3,58 @@ title: "Parte IV: Modelado"
 author: "ronny hdez-mora"
 date: "5/26/2019"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(purr)
+library(dplyr)
+library(ggplot2)
+library(modelr)
+options(na.action = na.warn)
 ```
 
-## R Markdown
+```{r}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+ggplot(sim1, aes(x, y)) + 
+  geom_abline(
+    aes(intercept = a1, slope = a2),
+    data = models, alpha = 1/4
+  ) + 
+  geom_point()
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+Los 250 modelos anteriores hay unos que son muy malos. Necesitamos uno que esté
+más cerca de los datos. Podemos ajustar uno encontrando los valores de `a_0` y
+`a_1` que genere el modelo con las distancias mínimas a estos datos.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+Esto se puede hacer con la distancia vertical entre cada punto y el modelo. Esta
+distancia es la diferencia entre el valor de y dado por el modelo (predicción)
+y el valor de y real en los datos.
+
+```{r}
+model1 <- function(a, data) {
+  a[1] + data$x * a[2]
+}
+
+model1(c(7, 1.5), sim1)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+... Revisar este capítulo después
+
+# Capítulo 19
+
+```{r}
+library(nycflights13)
+library(lubridate)
+```
+
+
+
