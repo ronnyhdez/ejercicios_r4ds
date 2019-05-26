@@ -376,8 +376,8 @@ models <- mtcars %>%
 models
 ```
 
-En el caso de crear una función anónima (que se puede unir con pipes) se 
-puede crear con purrr un atajo - un solo lado de la fórmula:
+En el caso de no querer crear una función anónima se puede crear con purrr un
+atajo - un solo lado de la fórmula:
 ```{r}
 models <- mtcars %>% 
   split(.$cyl) %>% 
