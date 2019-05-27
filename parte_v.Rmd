@@ -1,0 +1,87 @@
+---
+title: "parte_v"
+author: "ronny hdez-mora"
+date: "5/26/2019"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+```
+
+# Capítulo 22
+
+## Etiquetas
+
+Pasar de un gráfico exploratorio a uno explicativo inicia con las leyendas.
+Iniciando con el título
+
+ - **El propósito de un título es resumir el principal hallazgo**
+ 
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(se = FALSE) +
+  labs(
+    title = paste("Eficiencia del combustible declina con",
+                  "tamaño del motor"
+  ))
+```
+ 
+
+Hay dos etiquetas útiles si necesitamos añadir más texto: 
+
+ - **subtitle** añade detalles adicionales en un tamaño más pequeño en el título.
+ - **caption** añade texto en el fondo a la derecha del gráfico. Usualmente para
+ describir la fuente de los datos.
+ 
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_smooth(se = FALSE) +
+  labs(
+    title = paste(
+      "Eficiencia del combustible declina con",
+      "tamaño del motor"
+      ),
+    subtitle = paste(
+      "Vehículos de dos asientos son la excepcion",
+      "por su peso liviano."
+    ),
+    caption = "Datos de fueleconomy.gov"
+  )
+```
+
+## Anotaciones
+
+ - Se puede etiquetar observaciones individuales o grupos de observaciones
+ - La herramienta es `geom_text()`
+ - Una fuente de etiquetas es el tibble
+ 
+```{r}
+best_in_class <- mpg %>% 
+  group_by(class) %>% 
+  filter(row_number(desc(hwy)) > 1)
+
+# Para entender qué hace row_number
+best_in_class <- mpg %>% 
+  group_by(class) %>% 
+  mutate(a = row_number(hwy)) %>% 
+  arrange(desc(a))
+
+ggplot(mpg, aes(x = displ, hwy)) +
+  geom_point(aes(color = class)) +
+  geom_text(aes(label = model), data = best_in_class)
+```
+ 
+
+
+
+
+
