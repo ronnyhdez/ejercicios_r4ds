@@ -253,7 +253,72 @@ ggplot(daily, aes(x = date, y = resid, color = weekday)) +
   scale_fill_viridis_d()
 ```
 
+ - El modelo no predice bien el numero de vuelos los sabados.
+ - Hay algunos días con menos vuelos de lo esperado que son fechas festivas gringas.
+ - Parece haber una tendencia "smooth" a lo largo del año.
+ 
+Vamos a visualizar esa tendencia con  `geom_smooth()`
+```{r}
+ggplot(daily, aes(x = date, y = resid)) +
+  geom_line(colour = "grey50") +
+  geom_smooth(se = FALSE, span = 0.20)
+```
 
+Vamos que hay menor cantidad de vuelos en enero y diciembre y mas en el verano
+(mayo - setiembre)
+
+### Efecto de temporada en sabados
+
+Vamos a revisar la falla de predecir de manera precisa el numero de vuelos los
+sábados. Un buen lugar para iniciar es volver a lo numeros crudos, enfocandonos 
+en los sabados
+```{r}
+daily %>% 
+  filter(weekday == "sáb") %>% 
+  ggplot(aes(x = date, y = n)) + 
+  geom_line() + 
+  geom_point() +
+  scale_x_date(
+    breaks = "1 month",
+    date_labels = "%b"
+  )
+```
+
+Estos patrones se pueden dar porque en verano las personas estan de vacaciones
+y vuelan los sabados. Esto tiene relacion ademas con los periodos escolares.
+
+Vamos a crear una variable que capture los tres momentos escolares
+```{r}
+# Funcion para hacer los cortes
+term <- function(date) {
+  cut(date,
+      breaks = ymd(20130101, 20130605, 20130825, 20140101),
+      labels = c("spring", "summer", "fall")
+      )
+}
+
+# Mutate que incluye la funcion
+daily <- daily %>% 
+  mutate(term = term(date))
+
+daily %>% 
+  filter(weekday == "sáb") %>% 
+  ggplot(aes(x = date, y = n, colour = term)) + 
+  geom_line() + 
+  geom_point(alpha = 1/3) +
+  scale_x_date(
+    date_break = "1 month",
+    date_labels = "%b"
+  )
+```
+
+Es interesante además revisar cómo afecta la nueva variable los demás días de la
+semana:
+```{r}
+daily %>% 
+  ggplot(aes(x = weekday, y = n, colour = term)) +
+  geom_boxplot()
+```
 
 
 
