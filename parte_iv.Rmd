@@ -163,6 +163,96 @@ mod_diamond2 <- lm(
 EL modelo tiene ahora 4 predictores, por lo que es más difícil visualizar. Al
 ser independientes se pueden graficar por separado.
 
+Vamos a usar el  argumento `.model` para `data_grid`
+```{r}
+grid <- diamonds2 %>% 
+  data_grid(cut, .model = mod_diamond2) %>% 
+  add_predictions(mod_diamond2)
+
+grid
+```
+
+```{r}
+ggplot(grid, aes(cut, pred)) + 
+  geom_point()
+```
+
+## ¿Qué afecta el número de vuelos?
+
+Este es un ejemplo para mostras los pasos para entender mejor los datos.
+Vamos a iniciar contanto la cantidad de vuelos por dia y visualizandolo con
+ggplot2
+```{r}
+daily <- flights %>% 
+  mutate(date = make_date(year, month, day)) %>% 
+  group_by(date) %>% 
+  summarize(
+    n = n()
+    )
+
+glimpse(daily)
+```
+
+```{r}
+ggplot(daily, aes(x = date, y = n)) + 
+  geom_line()
+```
+
+### Día de la semana
+
+Entender el patrón a largo plazo es difícil porque hay un efecto muy fuerte de
+día de la semana. Vamos a revisar la distribución del número de vuelos por
+día de la semana:
+```{r}
+daily <- daily %>% 
+  mutate(weekday = wday(date, label = TRUE))
+
+ggplot(daily, aes(x = weekday, y = n)) +
+  geom_boxplot()
+```
+
+Lo que vemos es un patrón donde hay preferencia por viajar entre semana. Esto
+es más pronunciado los sábados. 
+
+Una manera de remover este efecto es usando un modelo. Primero ajustamos un 
+modelo y desplegamos las predicciones superpuestas en los datos originales.
+```{r}
+mod <- lm(n ~ weekday, data = daily)
+
+grid <- daily %>% 
+  data_grid(weekday) %>% 
+  add_predictions(mod, "n")
+
+ggplot(daily, aes(weekday, n)) +
+  geom_boxplot() +
+  geom_point(data = grid, color = "red", size = 4)
+```
+
+Ahora vamos a computar y plotear los residuales
+```{r}
+daily <- daily %>% 
+  add_residuals(mod)
+
+daily %>% 
+  ggplot(aes(x = date, y = resid)) +
+  geom_ref_line(h = 0, colour = "red") +
+  geom_line()
+```
+
+NOtar el cambio en el eje y: ahora vemos la desviación de la cantidad de vuelos
+esperados dado un día de la semana. Este grafico es util porque hemos removido
+mucha de la variación del efecto del fin de semana.
+
+Aún así nuestro modelo pare fallar a inicios de junio, vemos un patrón muy
+fuerte que nuestro modelo no logra capturar. Dibujando una línea por día de la
+semana nos facilitará visualizarlo
+```{r}
+ggplot(daily, aes(x = date, y = resid, color = weekday)) +
+  geom_ref_line(h = 0, colour = "red") +
+  geom_line() +
+  scale_fill_viridis_d()
+```
+
 
 
 
