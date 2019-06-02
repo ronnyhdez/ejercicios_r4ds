@@ -1,0 +1,46 @@
+---
+title: "Desechos Plásticos globales"
+author: "ronny hdez-mora"
+date: "6/1/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(readr)
+library(janitor)
+library(visdat)
+```
+
+Parte de los ejercicios de la comunidad de R, los tidytuesday reunen un conjunto
+de datos para explorar. En este caso se trata de datos sobre la contaminación
+plástica.
+
+## Datos
+```{r}
+coast_vs_waste <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-21/coastal-population-vs-mismanaged-plastic.csv") %>% 
+  clean_names()
+
+mismanaged_vs_gdp <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-21/per-capita-mismanaged-plastic-waste-vs-gdp-per-capita.csv") %>%
+  clean_names()
+
+waste_vs_gdp <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-21/per-capita-plastic-waste-vs-gdp-per-capita.csv") %>% 
+  clean_names()
+```
+
+## Revisión de NA's
+```{r}
+vis_dat(coast_vs_waste)
+```
+
+```{r}
+vis_dat(mismanaged_vs_gdp)
+```
+
+```{r}
+vis_dat(waste_vs_gdp)
+```
+

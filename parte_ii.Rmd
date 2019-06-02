@@ -1,0 +1,52 @@
+---
+title: "parte_ii"
+author: "ronny hdez-mora"
+date: "5/27/2019"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(readr)
+```
+
+# Capítulo 8
+
+## Problems
+
+```{r}
+challenge <- read_csv(readr_example("challenge.csv"))
+```
+
+No lo lee de manera correcta. Si queremos ver cuáles son los problemas los 
+podemos hacer con:
+```{r}
+problems(challenge)
+```
+
+Con esto podemos explorar más a fondo qué es lo que sucede con el archivo.
+
+Una buena estrategia es trabajar columna por columna hasta que no existan 
+problemas
+
+
+```{r}
+challenge <- read_csv(
+  readr_example("challenge.csv"),
+  col_types = cols(
+    x = col_double(),
+    y = col_character()
+  )
+)
+
+head(challenge)
+```
+
+
+```{r}
+tail(challenge)
+```
+
